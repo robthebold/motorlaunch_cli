@@ -229,6 +229,22 @@ def main() -> None:
                 print('Position: {}'.format(vehicle.state.attributes["position"]["status"]))
             if vin:
                 vehicle = account.get_vehicle(vin)
+        if choice == 'p':
+            if vehicle:
+                index = 1
+                while index != 0:
+                    views = []
+                    for view in VehicleViewDirection:
+                        print('{} {}'.format(index,view.name))
+                        views.append(view.name)
+                        index +=1
+                    index = int(input('Please select view or type 0 for done. '))
+                    if index != 0:
+                        print('{}'.format(views[index-1]))
+                        get_image(configdir,vehicle,VehicleViewDirection(views[index-1]))
+                        index = 1
+            else:
+                print('No vehicle selected - select one first')
         if choice =='r':
             if vehicle:
                 print('Raw status info (You asked for it):')
@@ -278,6 +294,18 @@ def quick_status(vehicle) -> None:
         if not vehicle.state.door_lock_state in ['LOCKED','SECURED']:
             print('Lock state {}'.format(vehicle.state.door_lock_state))
 
+
+def get_image(configdir,vehicle, direction: VehicleViewDirection) -> None:
+    """Download a rendered image of vehicle from direction point of view"""
+    # NB FRONT and FRONTSIDE and also REAR and REARSIDE appear to be the same image
+    # NB REARBIRDSEYE doesn't seem to be supported (at least for my car) do not use or crash
+    print('Getting rendered image . . .');
+    filename = configdir+'/image_'+vehicle.vin+'_'+direction.name+'.png'
+    with open(filename, 'wb') as output_file:
+        image_data = vehicle.get_vehicle_image(400,400,direction)
+        output_file.write(image_data)
+    print('Vehicle image saved to {}'.format(filename))
+
     
 def printmenu() -> None:
     print()
@@ -293,6 +321,7 @@ def printmenu() -> None:
     print('9. Unlock doors')
     print('a. Climatize (air condition or ventilate)')
     print('o. Open a Different Account')
+    print('p. Get rendered image of vehicle')
     print('r. Spew raw status')
     print('i. Inquire status item (expert function)')
     print('q. Quit');
